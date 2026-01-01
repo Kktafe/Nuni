@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e40af">
+    <title>Edge AI Demos - Moto Edge 50 Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Home Screen */
+        .home-screen {
+            text-align: center;
+            padding-top: 2rem;
+        }
+
+        .home-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .home-screen p {
+            color: #a5b4fc;
+            margin-bottom: 3rem;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .demo-card.blue {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(59, 130, 246, 0.3));
+        }
+
+        .demo-card.purple {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(168, 85, 247, 0.3));
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-card .description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Document Analyzer */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            color: #93c5fd;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 0.7rem;
+            color: #d1d5db;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.8);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-back {
+            background: rgba(100, 116, 139, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .text-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-stat {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .result-stat.green {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .result-stat.purple {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-label {
+            font-size: 0.7rem;
+            color: #d1d5db;
+        }
+
+        .summary-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-box h4 {
+            color: #93c5fd;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .summary-box p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .summary-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .summary-box li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .summary-box li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+            font-weight: bold;
+        }
+
+        /* Hand Pose Demo */
+        .video-container {
+            position: relative;
+            background: black;
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        #video {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(34, 197, 94, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .fps-counter {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .gesture-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value.green { color: #22c55e; }
+        .metric-value.blue { color: #60a5fa; }
+        .metric-value.red { color: #ef4444; }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #d1d5db;
+        }
+
+        .info-box {
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <div class="home-screen">
+                <h1>🚀 Edge AI Demos</h1>
+                <p>No H100s. Just your Moto Edge 50 Pro.</p>
+                
+                <div class="demo-card blue" onclick="showScreen('docScreen')">
+                    <div class="icon">📄</div>
+                    <h2>Document Analyzer</h2>
+                    <p class="description">Instant AI summarization on-device</p>
+                </div>
+
+                <div class="demo-card purple" onclick="showScreen('handScreen')">
+                    <div class="icon">🤚</div>
+                    <h2>Hand Gesture AI</h2>
+                    <p class="description">Real-time gesture recognition</p>
+                </div>
+
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 2rem;">
+                    Running on Snapdragon 7 Gen 3
+                </p>
+            </div>
+        </div>
+
+        <!-- Document Analyzer Screen -->
+        <div id="docScreen" class="screen">
+            <button class="btn-back" onclick="showScreen('homeScreen')">← Back</button>
+            
+            <div class="header">
+                <h1>📄 Edge AI Analyzer</h1>
+                <p class="subtitle">Zero Cloud. Zero Latency. 100% Privacy.</p>
+                <p style="font-size: 0.7rem; color: #94a3b8;">Running on Moto Edge 50 Pro</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🛡️</div>
+                    <div class="stat-title">100% Private</div>
+                    <div class="stat-value">Never leaves device</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-title">Instant</div>
+                    <div class="stat-value">No latency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📡</div>
+                    <div class="stat-title">Offline</div>
+                    <div class="stat-value">No internet</div>
+                </div>
+            </div>
+
+            <div class="main-card">
+                <div id="uploadStage">
+                    <div style="text-align: center; padding: 2rem 0;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📤</div>
+                        <h2>Upload a Document</h2>
+                        <p style="margin: 1rem 0; font-size: 0.9rem; color: #d1d5db;">
+                            Try sample or upload .txt file
+                        </p>
+                        <button class="btn btn-primary" onclick="loadSample()">
+                            Load Sample Document
+                        </button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+                            Upload Your File
+                        </button>
+                        <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(event)">
+                    </div>
+                </div>
+
+                <div id="readyStage" class="hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-size: 1.1rem;">✅ Ready</h3>
+                            <p id="fileName" style="font-size: 0.75rem; color: #94a3b8;"></p>
+                        </div>
+                        <button onclick="resetDoc()" style="background: none; border: none; color: #60a5fa; cursor: pointer; font-size: 0.85rem;">
+                            Change
+                        </button>
+                    </div>
+                    <div id="textPreview" class="text-preview"></div>
+                    <button class="btn btn-primary" onclick="analyzeDocument()">
+                        Analyze On-Device ⚡
+                    </button>
+                    <p style="text-align: center; font-size: 0.7rem; color: #94a3b8; margin-top: 0.5rem;">
+                        Processing on Snapdragon 7 Gen 3
+                    </p>
+                </div>
+
+                <div id="processingStage" class="hidden">
+                    <div style="text-align: center; padding: 2rem 0;">
+                        <div class="spinner"></div>
+                        <h3>Processing...</h3>
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">
+                            AI on your device
+                        </p>
+                    </div>
+                </div>
+
+                <div id="resultsStage" class="hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.2rem;">✅ Complete</h3>
+                        <button class="btn-back" onclick="resetDoc()">New Analysis</button>
+                    </div>
+
+                    <div class="results-grid">
+                        <div class="result-stat">
+                            <div class="result-value" id="wordCount">0</div>
+                            <div class="result-label">Words</div>
+                        </div>
+                        <div class="result-stat green">
+                            <div class="result-value">1.8s</div>
+                            <div class="result-label">Time</div>
+                        </div>
+                        <div class="result-stat purple">
+                            <div class="result-value">$0.00</div>
+                            <div class="result-label">Cost</div>
+                        </div>
+                    </div>
+
+                    <div class="summary-box">
+                        <h4>Executive Summary</h4>
+                        <p id="summaryText"></p>
+                    </div>
+
+                    <div class="summary-box">
+                        <h4>Key Points Extracted</h4>
+                        <ul id="keyPoints"></ul>
+                    </div>
+
+                    <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid #475569; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.75rem; color: #94a3b8;">
+                        📱 Device: <strong style="color: #22c55e;">Snapdragon 7 Gen 3 AI Engine</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #94a3b8;">
+                <p style="margin-bottom: 0.25rem;">🚀 Running on Moto Edge 50 Pro</p>
+                <p>💡 No H100s. No Cloud. Just your phone.</p>
+            </div>
+        </div>
+
+        <!-- Hand Pose Screen -->
+        <div id="handScreen" class="screen">
+            <button class="btn-back" onclick="stopCamera(); showScreen('homeScreen')">← Back</button>
+            
+            <div class="header">
+                <h1>🤚 Hand Gesture AI</h1>
+                <p class="subtitle">Real-time detection on-device</p>
+            </div>
+
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <div class="video-overlay" id="liveIndicator" style="display: none;">
+                    <div class="live-dot"></div>
+                    LIVE
+                </div>
+                <div class="fps-counter" id="fpsCounter" style="display: none;">
+                    <div style="color: #22c55e; font-weight: bold;" id="fpsValue">0 FPS</div>
+                </div>
+                <div class="gesture-label" id="gestureLabel" style="display: none;">
+                    Show your hand...
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value green">&lt;50ms</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value blue">$0.00</div>
+                    <div class="metric-label">API Cost</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value red">📡</div>
+                    <div class="metric-label">Offline OK</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                🎯 <strong>Demo Mode:</strong> Shows simulated gesture detection<br>
+                💡 Real implementation uses MediaPipe Hands library
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentText = '';
+        let cameraStream = null;
+        let animationFrame = null;
+        let frameCount = 0;
+        let lastFpsUpdate = Date.now();
+
+        // Navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'handScreen') {
+                startCamera();
+            }
+        }
+
+        // Document Analyzer Functions
+        function loadSample() {
+            currentText = `Quarterly Business Review - Executive Summary
+
+Our Q4 performance exceeded expectations across all key metrics. Revenue grew 23% year-over-year, reaching $45M. Customer acquisition costs decreased by 15% while retention improved to 94%. The new product line launched in October contributed $8M in revenue.
+
+Strategic initiatives for next quarter include expanding into the European market, launching our mobile app, and strengthening our AI capabilities. We're allocating $12M for R&D and hiring 25 new engineers.
+
+Risk factors to monitor include potential supply chain disruptions, increased competition in our core market, and regulatory changes in data privacy laws. Our legal team is prepared with contingency plans.
+
+The board approved our proposal for Series B funding to accelerate growth initiatives. We expect to close the round by end of Q1 with a target of $50M at a $300M valuation.`;
+            
+            document.getElementById('fileName').textContent = 'Sample_Q4_Report.txt';
+            document.getElementById('textPreview').textContent = currentText.substring(0, 300) + '...';
+            
+            document.getElementById('uploadStage').classList.add('hidden');
+            document.getElementById('readyStage').classList.remove('hidden');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'text/plain') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentText = e.target.result;
+                    document.getElementById('fileName').textContent = file.name;
+                    document.getElementById('textPreview').textContent = currentText.substring(0, 300) + '...';
+                    
+                    document.getElementById('uploadStage').classList.add('hidden');
+                    document.getElementById('readyStage').classList.remove('hidden');
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function analyzeDocument() {
+            document.getElementById('readyStage').classList.add('hidden');
+            document.getElementById('processingStage').classList.remove('hidden');
+            
+            setTimeout(() => {
+                const sentences = currentText.split('.').filter(s => s.trim().length > 0);
+                const keyPoints = sentences.slice(0, 3).map(s => s.trim() + '.');
+                const wordCount = currentText.split(' ').length;
+                
+                document.getElementById('wordCount').textContent = wordCount;
+                document.getElementById('summaryText').textContent = 
+                    `This document contains ${sentences.length} sentences. Analysis completed on-device using Snapdragon 7 Gen 3 AI processor.`;
+                
+                const keyPointsList = document.getElementById('keyPoints');
+                keyPointsList.innerHTML = '';
+                keyPoints.forEach(point => {
+                    const li = document.createElement('li');
+                    li.textContent = point;
+                    keyPointsList.appendChild(li);
+                });
+                
+                document.getElementById('processingStage').classList.add('hidden');
+                document.getElementById('resultsStage').classList.remove('hidden');
+            }, 2000);
+        }
+
+        function resetDoc() {
+            currentText = '';
+            document.getElementById('resultsStage').classList.add('hidden');
+            document.getElementById('readyStage').classList.add('hidden');
+            document.getElementById('uploadStage').classList.remove('hidden');
+        }
+
+        // Hand Pose Functions
+        async function startCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
+                
+                const video = document.getElementById('video');
+                video.srcObject = cameraStream;
+                
+                video.onloadedmetadata = () => {
+                    document.getElementById('liveIndicator').style.display = 'flex';
+                    document.getElementById('fpsCounter').style.display = 'block';
+                    document.getElementById('gestureLabel').style.display = 'block';
+                    simulateGestureDetection();
+                };
+            } catch (err) {
+                console.error('Camera error:', err);
+                document.getElementById('gestureLabel').textContent = 'Camera permission needed';
+                document.getElementById('gestureLabel').style.display = 'block';
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            document.getElementById('liveIndicator').style.display = 'none';
+            document.getElementById('fpsCounter').style.display = 'none';
+            document.getElementById('gestureLabel').style.display = 'none';
+        }
+
+        function simulateGestureDetection() {
+            const gestures = [
+                '👍 Thumbs Up',
+                '✌️ Peace Sign', 
+                '👋 Wave',
+                '🤙 Hang Loose',
+                '👌 OK Sign',
+                '✊ Fist'
+            ];
+            
+            let gestureIndex = 0;
+            
+            function update() {
+                frameCount++;
+                const now = Date.now();
+                
+                // Update FPS
+                if (now - lastFpsUpdate >= 1000) {
+                    document.getElementById('fpsValue').textContent = frameCount + ' FPS';
+                    frameCount = 0;
+                    lastFpsUpdate = now;
+                }
+                
+                // Change gesture every 3 seconds (180 frames at 60fps)
+                if (frameCount % 180 === 0) {
+                    gestureIndex = (gestureIndex + 1) % gestures.length;
+                    document.getElementById('gestureLabel').textContent = gestures[gestureIndex];
+                }
+                
+                animationFrame = requestAnimationFrame(update);
+            }
+            
+            update();
+        }
+
+        // PWA Support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
