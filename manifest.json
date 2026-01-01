@@ -1,0 +1,16 @@
+{
+  "name": "Edge AI Demos",
+  "short_name": "EdgeAI",
+  "description": "On-device AI demonstrations",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1e40af",
+  "background_color": "#0f172a",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
