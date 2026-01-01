@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e40af">
+    <title>Real Hand Gesture Detection - Moto Edge 50 Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            color: #a78bfa;
+            font-size: 0.9rem;
+        }
+
+        .video-container {
+            position: relative;
+            background: black;
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        #videoElement {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+        }
+
+        #canvasElement {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(34, 197, 94, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .fps-counter {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            display: none;
+        }
+
+        .gesture-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-value {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value.green { color: #22c55e; }
+        .metric-value.blue { color: #60a5fa; }
+        .metric-value.red { color: #ef4444; }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #d1d5db;
+        }
+
+        .info-box {
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .status-box {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(139, 92, 246, 0.3);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-back {
+            background: rgba(100, 116, 139, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="btn-back" onclick="window.history.back()">← Back to Demos</button>
+        
+        <div class="header">
+            <h1>🤚 Real Hand Gesture AI</h1>
+            <p class="subtitle">Powered by MediaPipe Hands + TensorFlow.js</p>
+        </div>
+
+        <div id="statusBox" class="status-box">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading AI model...</p>
+                <p style="font-size: 0.7rem; margin-top: 0.5rem; color: #a78bfa;">
+                    This may take 10-30 seconds on first load
+                </p>
+            </div>
+        </div>
+
+        <div class="video-container">
+            <video id="videoElement" autoplay playsinline></video>
+            <canvas id="canvasElement"></canvas>
+            
+            <div class="video-overlay" id="liveIndicator">
+                <div class="live-dot"></div>
+                LIVE
+            </div>
+            
+            <div class="fps-counter" id="fpsCounter">
+                <div style="color: #22c55e; font-weight: bold;" id="fpsValue">0 FPS</div>
+            </div>
+            
+            <div class="gesture-label" id="gestureLabel">
+                Show your hand...
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value green" id="latencyValue">--</div>
+                <div class="metric-label">Latency (ms)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value blue">$0.00</div>
+                <div class="metric-label">API Cost</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="handsDetected">0</div>
+                <div class="metric-label">Hands Detected</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>Real AI Detection:</strong> Using Google MediaPipe Hands<br>
+            🎯 Try: Thumbs up, Peace sign, Open palm, Closed fist<br>
+            📱 Processing on-device with TensorFlow.js
+        </div>
+    </div>
+
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const canvasCtx = canvasElement.getContext('2d');
+        const statusBox = document.getElementById('statusBox');
+        const gestureLabel = document.getElementById('gestureLabel');
+        const fpsCounter = document.getElementById('fpsCounter');
+        const liveIndicator = document.getElementById('liveIndicator');
+
+        let frameCount = 0;
+        let lastFpsUpdate = Date.now();
+        let lastProcessTime = Date.now();
+
+        // Initialize MediaPipe Hands
+        const hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onResults);
+
+        function onResults(results) {
+            // Calculate FPS and latency
+            const now = Date.now();
+            frameCount++;
+            
+            const latency = now - lastProcessTime;
+            document.getElementById('latencyValue').textContent = latency;
+            lastProcessTime = now;
+
+            if (now - lastFpsUpdate >= 1000) {
+                document.getElementById('fpsValue').textContent = frameCount + ' FPS';
+                frameCount = 0;
+                lastFpsUpdate = now;
+            }
+
+            // Set canvas size to match video
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+
+            // Clear canvas
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            // Draw hand landmarks if detected
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                document.getElementById('handsDetected').textContent = results.multiHandLandmarks.length;
+                
+                for (const landmarks of results.multiHandLandmarks) {
+                    // Draw connections
+                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+                        color: '#00FF00',
+                        lineWidth: 5
+                    });
+                    
+                    // Draw landmarks
+                    drawLandmarks(canvasCtx, landmarks, {
+                        color: '#FF0000',
+                        lineWidth: 2,
+                        radius: 5
+                    });
+
+                    // Detect gesture
+                    const gesture = detectGesture(landmarks);
+                    gestureLabel.textContent = gesture;
+                }
+            } else {
+                document.getElementById('handsDetected').textContent = '0';
+                gestureLabel.textContent = 'Show your hand...';
+            }
+
+            canvasCtx.restore();
+        }
+
+        // Simple gesture detection based on finger positions
+        function detectGesture(landmarks) {
+            // Get key landmark points
+            const thumb_tip = landmarks[4];
+            const thumb_ip = landmarks[3];
+            const index_tip = landmarks[8];
+            const index_pip = landmarks[6];
+            const middle_tip = landmarks[12];
+            const middle_pip = landmarks[10];
+            const ring_tip = landmarks[16];
+            const ring_pip = landmarks[14];
+            const pinky_tip = landmarks[20];
+            const pinky_pip = landmarks[18];
+            const wrist = landmarks[0];
+
+            // Count extended fingers
+            let extendedFingers = 0;
+            
+            // Check if fingers are extended (tip is higher than pip joint)
+            if (index_tip.y < index_pip.y) extendedFingers++;
+            if (middle_tip.y < middle_pip.y) extendedFingers++;
+            if (ring_tip.y < ring_pip.y) extendedFingers++;
+            if (pinky_tip.y < pinky_pip.y) extendedFingers++;
+
+            // Check thumb (different logic - check x position)
+            const thumbExtended = Math.abs(thumb_tip.x - thumb_ip.x) > 0.05;
+            if (thumbExtended) extendedFingers++;
+
+            // Detect specific gestures
+            if (extendedFingers === 0) {
+                return '✊ Closed Fist';
+            } else if (extendedFingers === 5) {
+                return '✋ Open Palm';
+            } else if (extendedFingers === 2 && index_tip.y < index_pip.y && middle_tip.y < middle_pip.y) {
+                return '✌️ Peace Sign';
+            } else if (extendedFingers === 1 && index_tip.y < index_pip.y) {
+                return '☝️ Pointing Up';
+            } else if (thumbExtended && extendedFingers === 1) {
+                return '👍 Thumbs Up';
+            } else if (extendedFingers === 3) {
+                return '🤟 Rock On';
+            } else {
+                return `🖐️ ${extendedFingers} Fingers`;
+            }
+        }
+
+        // Start camera and connect to MediaPipe
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                videoElement.srcObject = stream;
+                
+                videoElement.onloadedmetadata = () => {
+                    videoElement.play();
+                    
+                    // Hide status, show indicators
+                    statusBox.style.display = 'none';
+                    liveIndicator.style.display = 'flex';
+                    fpsCounter.style.display = 'block';
+                    gestureLabel.style.display = 'block';
+
+                    // Start processing
+                    const camera = new Camera(videoElement, {
+                        onFrame: async () => {
+                            await hands.send({image: videoElement});
+                        },
+                        width: 1280,
+                        height: 720
+                    });
+                    camera.start();
+                };
+
+            } catch (error) {
+                console.error('Camera error:', error);
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <p><strong>❌ Camera Access Error</strong></p>
+                    <p style="font-size: 0.75rem; margin-top: 0.5rem;">
+                        Please allow camera access and reload the page.<br>
+                        Error: ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        // Initialize when model is ready
+        hands.initialize().then(() => {
+            statusBox.innerHTML = `
+                <p style="color: #22c55e;"><strong>✅ AI Model Loaded</strong></p>
+                <p style="font-size: 0.75rem; margin-top: 0.5rem;">Starting camera...</p>
+            `;
+            startCamera();
+        }).catch(error => {
+            statusBox.className = 'status-box error';
+            statusBox.innerHTML = `
+                <p><strong>❌ Failed to Load AI Model</strong></p>
+                <p style="font-size: 0.75rem; margin-top: 0.5rem;">
+                    ${error.message}<br>
+                    Please check your internet connection and reload.
+                </p>
+            `;
+        });
+    </script>
+</body>
+</html>
