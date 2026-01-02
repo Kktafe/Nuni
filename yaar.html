@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAFE Edge AI Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #1a1a1a; color: #eee; text-align: center; }
+        .card { background: #2d2d2d; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 450px; margin: auto; border: 1px solid #444; }
+        select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; }
+        select { background: #444; color: white; cursor: pointer; }
+        button { background: #d32f2f; color: white; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
+        .recording { background: #ff5252; animation: pulse 1.5s infinite; }
+        #status { font-size: 0.85em; color: #aaa; margin: 10px 0; }
+        #response { margin-top: 15px; padding: 15px; background: #3d3d3d; border-radius: 10px; text-align: left; font-size: 0.95em; line-height: 1.4; border-left: 4px solid #d32f2f; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="color: #d32f2f; margin-bottom: 5px;">🚜 TAFE Edge Assistant</h2>
+        <div id="status">Status: Waiting for CSV...</div>
+
+        <input type="file" id="csvFile" accept=".csv" style="display: none;">
+        <button onclick="document.getElementById('csvFile').click()">📂 Load Massey Ferguson Data</button>
+
+        <select id="langSelect">
+            <option value="English">English</option>
+            <option value="Hindi">Hindi (हिन्दी)</option>
+            <option value="Tamil">Tamil (தமிழ்)</option>
+            <option value="Telugu">Telugu (తెలుగు)</option>
+            <option value="Marathi">Marathi (मराठी)</option>
+        </select>
+
+        <select id="voiceType">
+            <option value="male-bass">Male: Bass (Deep)</option>
+            <option value="male-baritone">Male: Baritone (Standard)</option>
+            <option value="female-contralto">Female: Contralto (Deep)</option>
+            <option value="female-mezzo">Female: Mezzo-Soprano (Standard)</option>
+        </select>
+
+        <button id="voiceBtn">🎤 Ask Question (Hands-Free)</button>
+        <div id="response">Device ready for offline sales analysis.</div>
+    </div>
+
+    <script>
+        let csvContent = "";
+        const voiceBtn = document.getElementById('voiceBtn');
+        const responseDiv = document.getElementById('response');
+        const statusDiv = document.getElementById('status');
+        const synth = window.speechSynthesis;
+
+        // 1. CSV Parsing (Local)
+        document.getElementById('csvFile').onchange = (e) => {
+            const file = e.target.files[0];
+            Papa.parse(file, {
+                header: true,
+                complete: (results) => {
+                    csvContent = JSON.stringify(results.data.slice(0, 20)); // Keep context lean
+                    statusDiv.innerText = "Status: Data Loaded (Offline)";
+                    responseDiv.innerText = "Data active. Connect Fire-Lens and ask a question.";
+                }
+            });
+        };
+
+        // 2. Voice Persona Mapping
+        function getVoiceProfile(type) {
+            switch(type) {
+                case 'male-bass': return { pitch: 0.5, rate: 0.85 };
+                case 'male-baritone': return { pitch: 0.8, rate: 1.0 };
+                case 'female-contralto': return { pitch: 0.9, rate: 0.95 };
+                case 'female-mezzo': return { pitch: 1.2, rate: 1.05 };
+                default: return { pitch: 1.0, rate: 1.0 };
+            }
+        }
+
+        // 3. Speech Recognition
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        voiceBtn.onclick = () => { recognition.start(); voiceBtn.classList.add('recording'); };
+
+        recognition.onresult = async (event) => {
+            voiceBtn.classList.remove('recording');
+            const query = event.results[0][0].transcript;
+            const targetLang = document.getElementById('langSelect').value;
+            statusDiv.innerText = `Analyzing in ${targetLang}...`;
+            runInference(query, targetLang);
+        };
+
+        // 4. Local Gemini Nano Inference
+        async function runInference(query, lang) {
+            if (!window.ai?.languageModel) {
+                responseDiv.innerText = "Error: Gemini Nano not found. Check chrome://flags";
+                return;
+            }
+
+            try {
+                const session = await window.ai.languageModel.create({
+                    systemPrompt: `You are a TAFE sales expert. Use this CSV data: ${csvContent}. 
+                    Respond ONLY in ${lang}. Be concise and professional.`
+                });
+                
+                const result = await session.prompt(query);
+                responseDiv.innerText = result;
+                
+                // Speak the result through Fire-Lens
+                const profile = getVoiceProfile(document.getElementById('voiceType').value);
+                const utterance = new SpeechSynthesisUtterance(result);
+                utterance.pitch = profile.pitch;
+                utterance.rate = profile.rate;
+                utterance.lang = lang === 'English' ? 'en-IN' : (lang === 'Hindi' ? 'hi-IN' : 'ta-IN'); // Dynamic lang tag
+                synth.speak(utterance);
+                
+                statusDiv.innerText = "Status: Answer Delivered";
+            } catch (err) {
+                responseDiv.innerText = "Inference Error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
