@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Brief Me! - Secure offline AI-powered document summarization">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>Brief Me!</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQnJpZWYgTWUhIiwic2hvcnRfbmFtZSI6IkJyaWVmIE1lIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxZTNhOGEiLCJ0aGVtZV9jb2xvciI6IiMxZTNhOGEiLCJkZXNjcmlwdGlvbiI6IlNlY3VyZSBvZmZsaW5lIEFJLXBvd2VyZWQgZG9jdW1lbnQgc3VtbWFyaXphdGlvbiIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSGRwWkhSb1BTSXhPVElpSUdobGFXZG9kRDBpTVRreUlqNDhjbVZqZENCM2FXUjBhRDBpTVRreUlpQm9aV2xuYUhROUlqRTVNaUlnWm1sc2JEMGlJekZsTTJFNFlTSXZQanh3WVhSb0lHUTlJazB4TURBZ056WmpNQ0F4TXkweE1DQXlNeTB5T0NBeU9DMHlPQ0F5T0hNdE1qZ2dNVFV0TWpnZ01qaHROamtnTkRKaE15QXpJREFnTUNBeExUUWdORTFuTnpZZ05UQmpNQ0F4TXkweE1DQXlNeTB5T0NBeU9GTXhNVEFnTmpNZ01UQXdJRGMyY3kweE1DQXhOUzB5T0NBeU9DMHlPQ0F5T0hNdE1UVWdNVEF0TWpnZ01qaDZJaUJtYVd4c1BTSWpabVptSWk4K1BDOXpkbWMrIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwifSx7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIZHBaSFJvUFNJMU1USWlJR2hsYVdkb2REMGlOVEV5SWo0OGNtVmpkQ0IzYVdSMGFEMGlOVEV5SWlCb1pXbG5hSFE5SWpVeE1pSWdabWxzYkQwaUl6RmxNMkU0WVNJdlBqeHdZWFJvSUdROUlrMHlOVFlnTWpBMFl6QWdNelV0TWpZZ05qRXRPRFVnT0RVdE9EVWdPRFZ6TFRnMUlETTFMVGcxSURnMUxURTROQ0F4TVRZZ015QXpJREFnTUNBeExURXdJREV5VFcweU1EQWdNVE01WXpBZ01qY3RNall1TlNBMk1TMDNNaUE0TlhNdE56SWdOVGd0TnpJZ09EVXRNVGcwSURFeE5pMHpJRE1nTUNBd0lERXRNVEFnTVRKNklpQm1hV3hzUFNJalptWm1JaTgrUEM5emRtYysiLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMWUzYThhIi8+PHBhdGggZD0iTTE2IDEyYzAgMi0yIDQtNSA1cy01IDItNSA1IDIgNSA1IDVoMTJhNSA1IDAgMCAwIDAtMTBjLTMgMC01LTItNS01eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --primary-light: #3b82f6;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .app-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .app-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .security-badge {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 400px 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg);
+        }
+
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(30, 58, 138, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text);
+        }
+
+        .processing-indicator {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .processing-indicator.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 2rem;
+        }
+
+        .result-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-content {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .result-content ul {
+            list-style-position: inside;
+            color: var(--text-secondary);
+        }
+
+        .result-content li {
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: var(--bg);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--success);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.active {
+            display: block;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem auto;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .security-badge {
+                display: none;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .privacy-notice {
+            background: rgba(5, 150, 105, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .privacy-icon {
+            color: var(--success);
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .privacy-text {
+            font-size: 0.875rem;
+            color: var(--text);
+        }
+
+        .privacy-text strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="app-logo">📋</div>
+            <h1 class="app-title">Brief Me!</h1>
+            <div class="security-badge">
+                <span>🔒</span>
+                <span>100% Offline</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="main-grid">
+            <aside>
+                <div class="card">
+                    <h2 class="card-title">
+                        <span>📁</span>
+                        <span>Upload Document</span>
+                    </h2>
+                    
+                    <div class="privacy-notice">
+                        <div class="privacy-icon">🔐</div>
+                        <div class="privacy-text">
+                            <strong>Your data never leaves this device</strong>
+                            All processing happens locally in your browser. No cloud. No servers. Complete confidentiality.
+                        </div>
+                    </div>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">Drop your memo here or click to browse</div>
+                        <div class="upload-hint">Supports PDF and TXT files</div>
+                    </div>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf,.txt">
+
+                    <div class="processing-indicator" id="processingIndicator">
+                        <div class="spinner"></div>
+                        <div class="processing-text" id="processingText">Summarizing locally...</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 2rem;">
+                    <h2 class="card-title">
+                        <span>🕐</span>
+                        <span>Recent Memos</span>
+                    </h2>
+                    <div id="historyList" class="history-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div>No memos yet</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <section>
+                <div class="card">
+                    <h2 class="card-title">
+                        <span>📊</span>
+                        <span>Analysis Results</span>
+                    </h2>
+
+                    <div id="emptyResults" class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div>Upload a document to see AI-powered insights</div>
+                    </div>
+
+                    <div id="results" class="results">
+                        <div class="result-section">
+                            <h3>
+                                <span>📌</span>
+                                <span>Executive Summary</span>
+                            </h3>
+                            <div class="result-content" id="summaryContent"></div>
+                        </div>
+
+                        <div class="result-section">
+                            <h3>
+                                <span>⚠️</span>
+                                <span>Key Risks</span>
+                            </h3>
+                            <div class="result-content" id="risksContent"></div>
+                        </div>
+
+                        <div class="result-section">
+                            <h3>
+                                <span>✅</span>
+                                <span>Decisions Required</span>
+                            </h3>
+                            <div class="result-content" id="decisionsContent"></div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn" id="newAnalysisBtn">
+                                <span>➕</span>
+                                <span>New Analysis</span>
+                            </button>
+                            <button class="btn btn-secondary" id="exportBtn">
+                                <span>💾</span>
+                                <span>Export Results</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+
+        env.allowLocalModels = false;
+        env.useBrowserCache = true;
+
+        class BriefMeApp {
+            constructor() {
+                this.summarizer = null;
+                this.currentDocument = null;
+                this.initElements();
+                this.initEventListeners();
+                this.loadHistory();
+                this.registerServiceWorker();
+            }
+
+            initElements() {
+                this.uploadZone = document.getElementById('uploadZone');
+                this.fileInput = document.getElementById('fileInput');
+                this.processingIndicator = document.getElementById('processingIndicator');
+                this.processingText = document.getElementById('processingText');
+                this.emptyResults = document.getElementById('emptyResults');
+                this.results = document.getElementById('results');
+                this.summaryContent = document.getElementById('summaryContent');
+                this.risksContent = document.getElementById('risksContent');
+                this.decisionsContent = document.getElementById('decisionsContent');
+                this.historyList = document.getElementById('historyList');
+                this.toast = document.getElementById('toast');
+                this.newAnalysisBtn = document.getElementById('newAnalysisBtn');
+                this.exportBtn = document.getElementById('exportBtn');
+            }
+
+            initEventListeners() {
+                this.uploadZone.addEventListener('click', () => this.fileInput.click());
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                
+                this.uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadZone.classList.add('drag-over');
+                });
+                
+                this.uploadZone.addEventListener('dragleave', () => {
+                    this.uploadZone.classList.remove('drag-over');
+                });
+                
+                this.uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadZone.classList.remove('drag-over');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.processFile(files[0]);
+                    }
+                });
+
+                this.newAnalysisBtn.addEventListener('click', () => this.resetAnalysis());
+                this.exportBtn.addEventListener('click', () => this.exportResults());
+            }
+
+            async registerServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const swCode = `
+                            const CACHE_NAME = 'brief-me-v1';
+                            const urlsToCache = ['/'];
+
+                            self.addEventListener('install', event => {
+                                event.waitUntil(
+                                    caches.open(CACHE_NAME)
+                                        .then(cache => cache.addAll(urlsToCache))
+                                );
+                            });
+
+                            self.addEventListener('fetch', event => {
+                                event.respondWith(
+                                    caches.match(event.request)
+                                        .then(response => response || fetch(event.request))
+                                );
+                            });
+                        `;
+                        const blob = new Blob([swCode], { type: 'application/javascript' });
+                        const swUrl = URL.createObjectURL(blob);
+                        await navigator.serviceWorker.register(swUrl);
+                    } catch (error) {
+                        console.log('Service Worker registration failed:', error);
+                    }
+                }
+            }
+
+            async handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    await this.processFile(file);
+                }
+            }
+
+            async processFile(file) {
+                const validTypes = ['application/pdf', 'text/plain'];
+                if (!validTypes.includes(file.type)) {
+                    this.showToast('Please upload a PDF or TXT file', 'error');
+                    return;
+                }
+
+                try {
+                    this.showProcessing(true, 'Extracting text...');
+                    const text = await this.extractText(file);
+                    
+                    if (!text || text.trim().length < 50) {
+                        throw new Error('Document appears to be empty or too short');
+                    }
+
+                    this.currentDocument = {
+                        name: file.name,
+                        text: text,
+                        date: new Date().toISOString()
+                    };
+
+                    await this.analyzeDocument(text);
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    this.showToast('Error processing document: ' + error.message, 'error');
+                    this.showProcessing(false);
+                }
+            }
+
+            async extractText(file) {
+                if (file.type === 'text/plain') {
+                    return await file.text();
+                } else if (file.type === 'application/pdf') {
+                    return await this.extractPdfText(file);
+                }
+            }
+
+            async extractPdfText(file) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = '';
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                }
+
+                return fullText;
+            }
+
+            async analyzeDocument(text) {
+                try {
+                    this.showProcessing(true, 'Loading AI model...');
+                    
+                    if (!this.summarizer) {
+                        this.summarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
+                    }
+
+                    this.showProcessing(true, 'Analyzing document...');
+
+                    const chunks = this.chunkText(text, 1000);
+                    const summaries = [];
+
+                    for (let i = 0; i < Math.min(chunks.length, 3); i++) {
+                        this.showProcessing(true, `Processing section ${i + 1}/${Math.min(chunks.length, 3)}...`);
+                        const result = await this.summarizer(chunks[i], {
+                            max_length: 130,
+                            min_length: 30,
+                            do_sample: false
+                        });
+                        summaries.push(result[0].summary_text);
+                    }
+
+                    const analysis = this.generateAnalysis(text, summaries);
+                    this.displayResults(analysis);
+                    this.saveToHistory(analysis);
+                    this.showProcessing(false);
+                    this.showToast('Analysis complete!');
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    this.showToast('Error during analysis: ' + error.message, 'error');
+                    this.showProcessing(false);
+                }
+            }
+
+            chunkText(text, maxLength) {
+                const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+                const chunks = [];
+                let currentChunk = '';
+
+                for (const sentence of sentences) {
+                    if ((currentChunk + sentence).length > maxLength && currentChunk) {
+                        chunks.push(currentChunk.trim());
+                        currentChunk = sentence;
+                    } else {
+                        currentChunk += ' ' + sentence;
+                    }
+                }
+
+                if (currentChunk) {
+                    chunks.push(currentChunk.trim());
+                }
+
+                return chunks;
+            }
+
+            generateAnalysis(fullText, summaries) {
+                const lowerText = fullText.toLowerCase();
+                
+                const riskKeywords = ['risk', 'concern', 'issue', 'problem', 'challenge', 'threat', 'uncertainty', 'potential', 'vulnerability'];
+                const decisionKeywords = ['decide', 'decision', 'approve', 'authorization', 'recommend', 'propose', 'action', 'next step'];
+
+                const risks = this.extractBulletPoints(fullText, riskKeywords, 'risks');
+                const decisions = this.extractBulletPoints(fullText, decisionKeywords, 'decisions');
+
+                return {
+                    name: this.currentDocument.name,
+                    date: this.currentDocument.date,
+                    summary: summaries,
+                    risks: risks.length > 0 ? risks : ['No specific risks explicitly identified in document'],
+                    decisions: decisions.length > 0 ? decisions : ['No specific decisions explicitly outlined in document']
+                };
+            }
+
+            extractBulletPoints(text, keywords, type) {
+                const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+                const points = [];
+
+                for (const sentence of sentences) {
+                    const lower = sentence.toLowerCase();
+                    if (keywords.some(kw => lower.includes(kw)) && sentence.trim().length > 20) {
+                        const cleaned = sentence.trim()
+                            .replace(/^\s*[-•*]\s*/, '')
+                            .replace(/\s+/g, ' ')
+                            .substring(0, 200);
+                        if (cleaned.length > 20 && !points.includes(cleaned)) {
+                            points.push(cleaned);
+                        }
+                    }
+                }
+
+                return points.slice(0, 5);
+            }
+
+            displayResults(analysis) {
+                this.emptyResults.style.display = 'none';
+                this.results.classList.add('active');
+
+                this.summaryContent.innerHTML = '<ul>' + 
+                    analysis.summary.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') + 
+                    '</ul>';
+
+                this.risksContent.innerHTML = '<ul>' + 
+                    analysis.risks.map(r => `<li>${this.escapeHtml(r)}</li>`).join('') + 
+                    '</ul>';
+
+                this.decisionsContent.innerHTML = '<ul>' + 
+                    analysis.decisions.map(d => `<li>${this.escapeHtml(d)}</li>`).join('') + 
+                    '</ul>';
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            saveToHistory(analysis) {
+                const history = this.getHistory();
+                history.unshift(analysis);
+                localStorage.setItem('briefMeHistory', JSON.stringify(history.slice(0, 10)));
+                this.loadHistory();
+            }
+
+            getHistory() {
+                try {
+                    return JSON.parse(localStorage.getItem('briefMeHistory')) || [];
+                } catch {
+                    return [];
+                }
